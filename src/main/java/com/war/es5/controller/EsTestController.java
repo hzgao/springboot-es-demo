@@ -120,10 +120,12 @@ public class EsTestController {
 		// 分页
 		Pageable pageable = new PageRequest(1, 1);
 		SearchQuery searchquery = new NativeSearchQueryBuilder()
-
-				// .withFields(fliedname) //查询哪些字段出来
-				.withHighlightFields(field) // 哪些字段高亮
-				.withQuery(queryBuilder) // 查询条件
+				//查询哪些字段出来
+				// .withFields(fliedname) 
+				// 哪些字段高亮
+				.withHighlightFields(field) 
+				// 查询条件
+				.withQuery(queryBuilder) 
 				.withPageable(pageable).build();
 
 		List<JSONObject> lst = esTp.query(searchquery, new ResultsExtractor<List<JSONObject>>() {
@@ -149,6 +151,7 @@ public class EsTestController {
 				myObject.put("id", searchHit.getId());
 				// 高亮结果集.
 				Map<String, String> mapHighlight = new HashMap<String, String>();
+				
 				Map<String, HighlightField> mapHighlights = searchHit.getHighlightFields();
 				mapHighlights.forEach((key, value) -> {
 					System.out.println("key = " + key);
@@ -189,11 +192,14 @@ public class EsTestController {
 		// 分页
 		Pageable pageable = new PageRequest(0, 1);
 		SearchQuery searchquery = new NativeSearchQueryBuilder()
-
-				// .withFields(fliedname) //查询哪些字段出来
-				.withHighlightFields(field) // 哪些字段高亮
-				.withQuery(queryBuilder) // 查询条件
-				.withPageable(pageable)  //分页
+				//查询哪些字段出来
+				// .withFields(fliedname) 
+				// 哪些字段高亮
+				.withHighlightFields(field) 
+				// 查询条件
+				.withQuery(queryBuilder) 
+				 //分页
+				.withPageable(pageable) 
 				.build();
 //		SearchResultMapper resultMapper = new DefaultResultMapper().mapResults(response, clazz, pageable);
 		//一定要有entity
@@ -263,10 +269,12 @@ public class EsTestController {
 		// 高亮字段 没效果
 		// Field[] field = {new Field(fliedname[0]),new Field(fliedname[1])};
 		SearchQuery searchquery = new NativeSearchQueryBuilder()
-
-				// .withFields(fliedname) //查询哪些字段出来
-				// .withHighlightFields(field) //哪些字段高亮
-				.withQuery(queryBuilder) // 查询条件
+				//查询哪些字段出来
+				// .withFields(fliedname) 
+				//哪些字段高亮
+				// .withHighlightFields(field) 
+				// 查询条件
+				.withQuery(queryBuilder) 
 				.build();
 		Page<TestEntity> lst = repository.search(searchquery);
 		return new ResponseEntity<Page<TestEntity>>(lst, HttpStatus.OK);

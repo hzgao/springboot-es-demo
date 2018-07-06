@@ -22,11 +22,12 @@ import org.springframework.util.CollectionUtils;
 
 /**
  * @author admin es 配置
+ * 这种方式依赖netty3
  */
-@Configuration
-public class ESConfig {
+//@Configuration
+public class ESConfigNetty3 {
 
-	private static final Logger logger = LoggerFactory.getLogger(ESConfig.class);
+	private static final Logger logger = LoggerFactory.getLogger(ESConfigNetty3.class);
 
 	/**
 	 * es 集群名称
