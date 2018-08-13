@@ -15,6 +15,7 @@ import java.util.stream.StreamSupport;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder.Field;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
@@ -28,6 +29,7 @@ import org.springframework.data.elasticsearch.core.ResultsExtractor;
 import org.springframework.data.elasticsearch.core.SearchResultMapper;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.aggregation.impl.AggregatedPageImpl;
+import org.springframework.data.elasticsearch.core.query.DeleteQuery;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
@@ -37,10 +39,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
 import com.alibaba.fastjson.JSONObject;
+import com.war.es5.entity.EsStructuredInfo;
 import com.war.es5.entity.TestEntity;
 import com.war.es5.entity.TestEntityHighlight;
 import com.war.es5.repository.EsTestRepository;
+import com.war.es5.service.EsTemplateService;
 
 /**
  * @author admin
@@ -54,6 +59,56 @@ public class EsTestController {
 	private ElasticsearchTemplate esTp;
 	@Autowired
 	private EsTestRepository repository;
+	
+	@Autowired
+	private EsTemplateService service;
+	
+	/**
+	 * 保存-- ElasticsearchTemplate接口例子 entity 可以没有id
+	 * 
+	 * @param document
+	 * @return
+	 * @throws IOException 
+	 */
+	@RequestMapping(value = "/createIndex", method = RequestMethod.POST)
+	public ResponseEntity<HttpStatus> createIndex(@RequestBody TestEntity document) throws IOException {
+
+		// 插入
+		service.createIndex(document);
+		return new ResponseEntity<HttpStatus>(HttpStatus.ALREADY_REPORTED, HttpStatus.OK);
+	}
+	
+	/**
+	 * 保存-- ElasticsearchTemplate接口例子 entity 可以没有id
+	 * 
+	 * @param document
+	 * @return
+	 */
+	@RequestMapping(value = "/rmIndex", method = RequestMethod.POST)
+	public ResponseEntity<HttpStatus> rmIndex(@RequestBody TestEntity document) {
+
+		// 删除
+//		EsStructuredInfo es = new EsStructuredInfo();
+		service.deleteIndex(document);
+		return new ResponseEntity<HttpStatus>(HttpStatus.ALREADY_REPORTED, HttpStatus.OK);
+	}
+	
+
+	/**
+	 * 保存-- ElasticsearchTemplate接口例子 entity 可以没有id
+	 * 
+	 * @param document
+	 * @return
+	 */
+	@RequestMapping(value = "/saveT", method = RequestMethod.POST)
+	public ResponseEntity<HttpStatus> saveT(@RequestBody TestEntity document) {
+
+		// 插入
+		service.save(document);
+		return new ResponseEntity<HttpStatus>(HttpStatus.ALREADY_REPORTED, HttpStatus.OK);
+	}
+
+	
 
 	/**
 	 * 保存-- ElasticsearchTemplate接口例子 entity 可以没有id
@@ -115,18 +170,20 @@ public class EsTestController {
 		// 精确匹配
 		QueryBuilder queryBuilder = QueryBuilders.multiMatchQuery(document.getString("key"), fliedname);
 		System.out.println("builder.toString()  " + queryBuilder.toString());
+
 		// 高亮字段
 		Field[] field = { new Field(fliedname[0]), new Field(fliedname[1]) };
 		// 分页
-		Pageable pageable = new PageRequest(1, 1);
-		SearchQuery searchquery = new NativeSearchQueryBuilder()
+		Pageable pageable = new PageRequest(0, 100);
+		SearchQuery searchquery = new NativeSearchQueryBuilder()	
 				//查询哪些字段出来
 				// .withFields(fliedname) 
 				// 哪些字段高亮
 				.withHighlightFields(field) 
 				// 查询条件
 				.withQuery(queryBuilder) 
-				.withPageable(pageable).build();
+				.withPageable(pageable)
+				.build();
 
 		List<JSONObject> lst = esTp.query(searchquery, new ResultsExtractor<List<JSONObject>>() {
 			DefaultEntityMapper defaultEntityMapper = new DefaultEntityMapper();
@@ -267,16 +324,48 @@ public class EsTestController {
 		QueryBuilder queryBuilder = QueryBuilders.multiMatchQuery(document.getString("key"), fliedname);
 		System.out.println("builder.toString()  " + queryBuilder.toString());
 		// 高亮字段 没效果
-		// Field[] field = {new Field(fliedname[0]),new Field(fliedname[1])};
+		 Field[] field = {new Field(fliedname[0]),new Field(fliedname[1])};
 		SearchQuery searchquery = new NativeSearchQueryBuilder()
 				//查询哪些字段出来
-				// .withFields(fliedname) 
+				 .withFields(fliedname) 
 				//哪些字段高亮
-				// .withHighlightFields(field) 
+				 .withHighlightFields(field) 
 				// 查询条件
 				.withQuery(queryBuilder) 
 				.build();
 		Page<TestEntity> lst = repository.search(searchquery);
 		return new ResponseEntity<Page<TestEntity>>(lst, HttpStatus.OK);
+	}
+	
+	/**
+	 * 查询 Repository接口例子
+	 * 
+	 * @param document
+	 * @return
+	 */
+	@RequestMapping(value = "/delete", method = RequestMethod.POST)
+	public ResponseEntity<String> delete(@RequestBody JSONObject document) {
+		//删除es数据  这里可以修改不同的条件
+		QueryBuilder queryBuilder = QueryBuilders.termQuery("text1", 
+				"iicd");
+		SearchQuery searchquery = new NativeSearchQueryBuilder()
+				//查询哪些字段出来
+				// .withFields(fliedname) 
+				// 哪些字段高亮
+//				.withHighlightFields(field) 
+				// 查询条件
+				.withQuery(queryBuilder) 
+				.build();
+		List<TestEntity> lst = esTp.queryForList(searchquery, TestEntity.class);
+		System.out.println(lst.size());
+		//删除
+		DeleteQuery del = new DeleteQuery();
+		del.setQuery(queryBuilder);
+		del.setType(TestEntity.INDEX);
+		esTp.delete(del, TestEntity.class);
+
+		lst = esTp.queryForList(searchquery, TestEntity.class);
+		System.out.println(lst.size());
+		return new ResponseEntity<String>("ok", HttpStatus.OK);
 	}
 }

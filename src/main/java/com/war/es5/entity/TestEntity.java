@@ -4,9 +4,12 @@
 package com.war.es5.entity;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
  * @author admin
@@ -30,9 +33,12 @@ public class TestEntity implements Serializable   {
 	 */
 	@Id
 	private String id;
-	
+	@Field(type=FieldType.Text,searchAnalyzer="ik_smart", analyzer="ik_max_word")
 	private String text1;
+	@Field(type=FieldType.Text,searchAnalyzer="ik_smart", analyzer="ik_max_word")
 	private String text2;
+	
+	private Map<String,Object> highlight;
 
 	/**
 	 * @return the text1
@@ -69,6 +75,18 @@ public class TestEntity implements Serializable   {
 	 */
 	public void setId(String id) {
 		this.id = id;
+	}
+	/**
+	 * @return the highlight
+	 */
+	public Map<String, Object> getHighlight() {
+		return highlight;
+	}
+	/**
+	 * @param highlight the highlight to set
+	 */
+	public void setHighlight(Map<String, Object> highlight) {
+		this.highlight = highlight;
 	}
 
 }
