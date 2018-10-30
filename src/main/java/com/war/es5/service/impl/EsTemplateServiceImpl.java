@@ -130,9 +130,10 @@ public class EsTemplateServiceImpl implements EsTemplateService {
 			String indexName = document.indexName();
 			String indexType = StringUtils.hasText(document.type()) ? document.type()
 					: clazz.getSimpleName().toLowerCase(Locale.ENGLISH);
-			
 			//ik 分词器ik_max_word  ik_smart
 			XContentBuilder setting = XContentFactory.jsonBuilder()
+					//分片	
+					//分词
 					.startObject()
 					.startObject("analysis")
 					.startObject("analyzer")
@@ -159,7 +160,7 @@ public class EsTemplateServiceImpl implements EsTemplateService {
 					mapping.startObject(item.getName())
 					.field("type",fliedType.type().toString().toLowerCase())
 					.field("analyzer",fliedType.analyzer().toString().toLowerCase())
-					.field("search_analyzer",fliedType.searchAnalyzer().toString().toLowerCase())
+//					.field("search_analyzer",fliedType.searchAnalyzer().toString().toLowerCase())
 					.endObject();
 				}
 

@@ -33,9 +33,9 @@ public class TestEntity implements Serializable   {
 	 */
 	@Id
 	private String id;
-	@Field(type=FieldType.Text,searchAnalyzer="ik_smart", analyzer="ik_max_word")
+	@Field(type=FieldType.Text, analyzer="ik_max_word")
 	private String text1;
-	@Field(type=FieldType.Text,searchAnalyzer="ik_smart", analyzer="ik_max_word")
+	@Field(type=FieldType.Text, analyzer="ik_max_word")
 	private String text2;
 	
 	private Map<String,Object> highlight;

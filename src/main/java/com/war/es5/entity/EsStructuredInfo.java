@@ -47,7 +47,7 @@ public class EsStructuredInfo implements Serializable {
 	/**
 	 * 文件名
 	 */
-	@Field(type=FieldType.Text,searchAnalyzer="ik_smart", analyzer="ik_max_word")
+	@Field(type=FieldType.Text, analyzer="ik_max_word")
 	private String fileName;
 	/**
 	 * 样本id
@@ -64,7 +64,7 @@ public class EsStructuredInfo implements Serializable {
 	/**
 	 * 转写结果
 	 */
-	@Field(type=FieldType.Text,searchAnalyzer="ik_smart", analyzer="ik_max_word")
+	@Field(type=FieldType.Text, analyzer="ik_max_word")
 	private String decodeReesult;
 	
 	/**

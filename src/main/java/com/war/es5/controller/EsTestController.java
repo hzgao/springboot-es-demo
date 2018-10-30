@@ -239,7 +239,7 @@ public class EsTestController {
 	 * @return
 	 */
 	@RequestMapping(value = "/searchPageByTp", method = RequestMethod.POST)
-	public ResponseEntity<AggregatedPage<TestEntityHighlight>> searchPageByTp(@RequestBody JSONObject document) {
+	public ResponseEntity<List<TestEntityHighlight>> searchPageByTp(@RequestBody JSONObject document) {
 		String[] fliedname = { "text1", "text2" };
 		// 精确匹配
 		QueryBuilder queryBuilder = QueryBuilders.multiMatchQuery(document.getString("key"), fliedname);
@@ -260,55 +260,56 @@ public class EsTestController {
 				.build();
 //		SearchResultMapper resultMapper = new DefaultResultMapper().mapResults(response, clazz, pageable);
 		//一定要有entity
-		AggregatedPage<TestEntityHighlight> pages = esTp.queryForPage(searchquery, TestEntityHighlight.class, new SearchResultMapper() {
-			DefaultEntityMapper defaultEntityMapper = new DefaultEntityMapper();
-			
-			@Override
-			public <T> AggregatedPage<T> mapResults(SearchResponse searchresponse, Class<T> class1, Pageable pageable) {
-				
-				System.out.println("pageable.getPageSize()" + pageable.getPageSize());
-				// 解析命中结果
-				List<TestEntityHighlight> lstOBJ = StreamSupport.stream(searchresponse.getHits().spliterator(), false)
-						.map(this::searchHitToMyClass).collect(Collectors.toList());
-//				new AggregatedPageImpl<>(content, pageable, total)
-				//坑噢
-				return new AggregatedPageImpl<T>((List<T>) lstOBJ);
-			}
-
-			// 解析结果结果集
-			private TestEntityHighlight searchHitToMyClass(SearchHit searchHit) {
-				// 序列化命中的对象
-				TestEntityHighlight myObject = null;
-				try {
-					myObject = defaultEntityMapper.mapToObject(searchHit.getSourceAsString(), TestEntityHighlight.class);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				// id 需要set 如果保存是使用es的_id
-				myObject.setId(searchHit.getId());
-				// 高亮结果集.
-				Map<String, String> mapHighlight = new HashMap<String, String>();
-				Map<String, HighlightField> mapHighlights = searchHit.getHighlightFields();
-				mapHighlights.forEach((key, value) -> {
-					System.out.println("key = " + key);
-					System.out.println("value = " + value);
-				});
-				mapHighlights.values().stream().forEach(highlightField -> {
-
-					System.out.println("name = " + highlightField.getName());
-					System.out.println("Fragments = " + highlightField.getFragments().toString());
-					Arrays.stream(highlightField.getFragments()).forEach(text -> {
-						System.out.println("text = " + text.string());
-						mapHighlight.put(highlightField.getName(), text.string());
-					});
-				});
-				myObject.setMapHighlight(mapHighlight);
-				return myObject;
-			}
-
-		});
+		List<TestEntityHighlight>  lst = esTp.queryForList(searchquery, TestEntityHighlight.class);
+//		AggregatedPage<TestEntityHighlight> pages = esTp.queryForPage(searchquery, TestEntityHighlight.class, new SearchResultMapper() {
+//			DefaultEntityMapper defaultEntityMapper = new DefaultEntityMapper();
+//			
+//			@Override
+//			public <T> AggregatedPage<T> mapResults(SearchResponse searchresponse, Class<T> class1, Pageable pageable) {
+//				
+//				System.out.println("pageable.getPageSize()" + pageable.getPageSize());
+//				// 解析命中结果
+//				List<TestEntityHighlight> lstOBJ = StreamSupport.stream(searchresponse.getHits().spliterator(), false)
+//						.map(this::searchHitToMyClass).collect(Collectors.toList());
+////				new AggregatedPageImpl<>(content, pageable, total)
+//				//坑噢
+//				return new AggregatedPageImpl<T>((List<T>) lstOBJ);
+//			}
+//
+//			// 解析结果结果集
+//			private TestEntityHighlight searchHitToMyClass(SearchHit searchHit) {
+//				// 序列化命中的对象
+//				TestEntityHighlight myObject = null;
+//				try {
+//					myObject = defaultEntityMapper.mapToObject(searchHit.getSourceAsString(), TestEntityHighlight.class);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//				// id 需要set 如果保存是使用es的_id
+//				myObject.setId(searchHit.getId());
+//				// 高亮结果集.
+//				Map<String, String> mapHighlight = new HashMap<String, String>();
+//				Map<String, HighlightField> mapHighlights = searchHit.getHighlightFields();
+//				mapHighlights.forEach((key, value) -> {
+//					System.out.println("key = " + key);
+//					System.out.println("value = " + value);
+//				});
+//				mapHighlights.values().stream().forEach(highlightField -> {
+//
+//					System.out.println("name = " + highlightField.getName());
+//					System.out.println("Fragments = " + highlightField.getFragments().toString());
+//					Arrays.stream(highlightField.getFragments()).forEach(text -> {
+//						System.out.println("text = " + text.string());
+//						mapHighlight.put(highlightField.getName(), text.string());
+//					});
+//				});
+//				myObject.setMapHighlight(mapHighlight);
+//				return myObject;
+//			}
+//
+//		});
 	
-		return new ResponseEntity<AggregatedPage<TestEntityHighlight>>(pages, HttpStatus.OK);
+		return new ResponseEntity<List<TestEntityHighlight>>(lst, HttpStatus.OK);
 	}
 
 	/**
